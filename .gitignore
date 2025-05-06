@@ -45,6 +45,9 @@ jspm_packages/
 # Snowpack dependency directory (https://snowpack.dev/)
 web_modules/
 
+# TypeScript v1 declaration files
+typings/
+
 # TypeScript cache
 *.tsbuildinfo
 
@@ -72,7 +75,7 @@ web_modules/
 # Yarn Integrity file
 .yarn-integrity
 
-# dotenv environment variable files
+# dotenv environment variables file
 .env
 .env.development.local
 .env.test.local
@@ -83,35 +86,14 @@ web_modules/
 .cache
 .parcel-cache
 
-# Next.js build output
+# next.js build output
 .next
-out
 
-# Nuxt.js build / generate output
+# nuxt.js build output
 .nuxt
-dist
-
-# Gatsby files
-.cache/
-# Comment in the public line in if your project uses Gatsby and not Next.js
-# https://nextjs.org/blog/next-9-1#public-directory-support
-# public
 
 # vuepress build output
 .vuepress/dist
-
-# vuepress v2.x temp and cache directory
-.temp
-.cache
-
-# vitepress build output
-**/.vitepress/dist
-
-# vitepress cache directory
-**/.vitepress/cache
-
-# Docusaurus cache and generated files
-.docusaurus
 
 # Serverless directories
 .serverless/
@@ -122,15 +104,17 @@ dist
 # DynamoDB Local files
 .dynamodb/
 
-# TernJS port file
-.tern-port
+# TypeScript output
+dist
+out
 
-# Stores VSCode versions used for testing VSCode extensions
-.vscode-test
+# Azure Functions artifacts
+bin
+obj
+appsettings.json
+local.settings.json
 
-# yarn v2
-.yarn/cache
-.yarn/unplugged
-.yarn/build-state.yml
-.yarn/install-state.gz
-.pnp.*
+# Azurite artifacts
+__blobstorage__
+__queuestorage__
+__azurite_db*__.json
