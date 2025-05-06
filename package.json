@@ -13,5 +13,6 @@
     "botbuilder": "^4.23.2",
     "botbuilder-ai": "^4.23.2"
   },
-  "main": "src/{index.js,functions/*.js}"
+  "main": "src/{index.js,functions/*.js}",
+  "type": "module"
 }

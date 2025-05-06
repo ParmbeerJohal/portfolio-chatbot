@@ -1,6 +1,6 @@
 import { app } from "@azure/functions";
 import { DefaultAzureCredential } from "@azure/identity";
-import fetch from "node-fetch";
+import axios from "axios";
 
 app.http('QueryChatbot', {
   authLevel: 'anonymous',
@@ -88,33 +88,59 @@ app.http('QueryChatbot', {
         headers['Authorization'] = `Bearer ${accessToken}`;
       }
       
-      const response = await fetch(qnaUrl, {
-        method: 'POST',
-        body: JSON.stringify(qnaQuery),
-        headers: headers
-      });
-      
-      // Process the response
-      if (!response.ok) {
-        const errorText = await response.text();
-        context.log.error(`API error: ${response.status} - ${errorText}`);
+      try {
+        // Azure best practice: Add timeout and retry configuration
+        const response = await axios({
+          method: 'post',
+          url: qnaUrl,
+          data: qnaQuery,  // Axios automatically serializes to JSON
+          headers: headers,
+          timeout: 15000,  // 15 second timeout per Azure best practices
+          maxRetries: 3,   // Retry failed requests
+          retryDelay: 1000 // Delay between retries (ms)
+        });
+        
+        // Successful response
+        context.log("Successfully retrieved answer from knowledge base");
+        
+        // Return the result - axios automatically parses JSON
         return {
-          status: response.status,
-          body: JSON.stringify({ error: `Language service error: ${response.status}` })
+          status: 200,
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(response.data)
         };
+      } catch (axiosError) {
+        // Axios consolidates errors - check for specific conditions
+        const status = axiosError.response?.status || 500;
+        const errorMessage = axiosError.response?.data || axiosError.message;
+        
+        context.log.error(`API error: ${status} - ${JSON.stringify(errorMessage)}`);
+        
+        // Enhanced error reporting for different error types based on Azure best practices
+        if (axiosError.code === 'ECONNABORTED') {
+          return {
+            status: 504, // Gateway Timeout
+            body: JSON.stringify({ error: "Request to Language service timed out" })
+          };
+        } else if (axiosError.response) {
+          // The server responded with a status code outside of 2xx range
+          return {
+            status: status,
+            body: JSON.stringify({ 
+              error: `Language service error: ${status}`,
+              details: errorMessage
+            })
+          };
+        } else {
+          // Network error or request setup error
+          return {
+            status: 500,
+            body: JSON.stringify({ error: "Failed to connect to Language service" })
+          };
+        }
       }
-      
-      const result = await response.json();
-      context.log("Successfully retrieved answer from knowledge base");
-      
-      // Return the result
-      return {
-        status: 200,
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(result)
-      };
     } catch (error) {
       // Comprehensive error handling
       context.log.error(`Function error: ${error.message}`);
